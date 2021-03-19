@@ -491,3 +491,4 @@ for test in ${tests[@]-}; do
     run_spark_integration ${test} "2x-gpu-v510"
   fi
 done
+
