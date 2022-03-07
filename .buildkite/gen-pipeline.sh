@@ -6,8 +6,13 @@ set -eu
 # our repository in AWS
 repository=823773083436.dkr.ecr.us-east-1.amazonaws.com/buildkite
 
+# our queues
+cpu_queue="cpu-v572"
+gpux2_queue="2x-gpu-v572"
+gpux4_queue="4x-gpu-v572"
+
 # our baseline test is
-baseline="test-cpu-gloo-py3_8-tf2_7_0-keras2_7_0-torch1_10_1-mxnet1_9_0-pyspark3_2_0"
+baseline="test-cpu-gloo-py3_8-tf2_8_0-keras2_8_0-torch1_10_2-mxnet1_9_0-pyspark3_2_1"
 # in run_gloo_integration we run 'Elastic Spark * Tests' for this baseline
 # so it has to have Gloo mpi kind
 
@@ -17,19 +22,19 @@ code_files=$(python "$dir/get_changed_code_files.py" || echo failure)
 tests=$(if [[ -n "${PIPELINE_MODE:-}" ]] && ( [[ "${BUILDKITE_BRANCH:-}" == "${BUILDKITE_PIPELINE_DEFAULT_BRANCH:-}" ]] || [[ -n "$code_files" ]] ); then
   # we vary the baseline along the Python dimension and PySpark together
   # run_gloo_integration expects these to have Gloo mpi kind to run 'Elastic Spark * Tests'
-  printf "test-cpu-gloo-py3_7-tf2_7_0-keras2_7_0-torch1_10_1-mxnet1_9_0-pyspark2_4_8 "
-  printf "test-cpu-gloo-py3_8-tf2_7_0-keras2_7_0-torch1_10_1-mxnet1_9_0-pyspark3_1_2 "
+  printf "test-cpu-gloo-py3_7-tf2_8_0-keras2_8_0-torch1_10_2-mxnet1_9_0-pyspark2_4_8 "
+  printf "test-cpu-gloo-py3_8-tf2_8_0-keras2_8_0-torch1_10_2-mxnet1_9_0-pyspark3_1_3 "
   # our baseline
   printf "$baseline "
 
   # then we vary the baseline along mpi kinds dimension
   # our baseline again
-# printf "test-cpu-gloo-py3_8-tf2_7_0-keras2_7_0-torch1_10_1-mxnet1_9_0-pyspark3_2_0 "
-  printf "test-cpu-mpich-py3_8-tf2_7_0-keras2_7_0-torch1_10_1-mxnet1_9_0-pyspark3_2_0 "
-  printf "test-cpu-oneccl-py3_8-tf2_7_0-keras2_7_0-torch1_10_1-mxnet1_9_0-pyspark3_2_0 "
-  printf "test-cpu-openmpi-py3_8-tf2_7_0-keras2_7_0-torch1_10_1-mxnet1_9_0-pyspark3_2_0 "
+# printf "test-cpu-gloo-py3_8-tf2_8_0-keras2_8_0-torch1_10_2-mxnet1_9_0-pyspark3_2_1 "
+  printf "test-cpu-mpich-py3_8-tf2_8_0-keras2_8_0-torch1_10_2-mxnet1_9_0-pyspark3_2_1 "
+  printf "test-cpu-oneccl-py3_8-tf2_8_0-keras2_8_0-torch1_10_2-mxnet1_9_0-pyspark3_2_1 "
+  printf "test-cpu-openmpi-py3_8-tf2_8_0-keras2_8_0-torch1_10_2-mxnet1_9_0-pyspark3_2_1 "
   # note: we test openmpi-gloo mpi kind in this variation in each of [cpu, gpu, mixed]
-  printf "test-cpu-openmpi-gloo-py3_8-tf2_7_0-keras2_7_0-torch1_10_1-mxnet1_9_0-pyspark3_2_0 "
+  printf "test-cpu-openmpi-gloo-py3_8-tf2_8_0-keras2_8_0-torch1_10_2-mxnet1_9_0-pyspark3_2_1 "
 
   # then we vary the baseline along the framework dimensions all together
   # some frameworks are not available for our baseline Python version 3.8, so we use Python 3.7
@@ -37,26 +42,26 @@ tests=$(if [[ -n "${PIPELINE_MODE:-}" ]] && ( [[ "${BUILDKITE_BRANCH:-}" == "${B
   # there is no mxnet-1.6.0.post0 and mxnet-1.6.0 does not work with horovod
   # https://github.com/apache/incubator-mxnet/issues/16193
   # so we test with mxnet 1.5.1
-  printf "test-cpu-gloo-py3_7-tf1_15_5-keras2_2_4-torch1_7_1-mxnet1_5_1_p0-pyspark3_2_0 "
-  printf "test-cpu-gloo-py3_8-tf2_5_2-keras2_5_0rc0-torch1_8_1-mxnet1_7_0_p2-pyspark3_2_0 "
-  printf "test-cpu-gloo-py3_8-tf2_6_2-keras2_6_0-torch1_9_1-mxnet1_8_0_p0-pyspark3_2_0 "
+  printf "test-cpu-gloo-py3_7-tf1_15_5-keras2_2_4-torch1_7_1-mxnet1_5_1_p0-pyspark3_2_1 "
+  printf "test-cpu-gloo-py3_8-tf2_6_3-keras2_6_0-torch1_8_1-mxnet1_7_0_p2-pyspark3_2_1 "
+  printf "test-cpu-gloo-py3_8-tf2_7_1-keras2_7_0-torch1_9_1-mxnet1_8_0_p0-pyspark3_2_1 "
   # our baseline again
-# printf "test-cpu-gloo-py3_8-tf2_7_0-keras2_7_0-torch1_10_1-mxnet1_9_0-pyspark3_2_0 "
-  printf "test-cpu-gloo-py3_8-tfhead-keras_none-torchhead-mxnethead-pyspark3_2_0 "
+# printf "test-cpu-gloo-py3_8-tf2_8_0-keras2_8_0-torch1_10_2-mxnet1_9_0-pyspark3_2_1 "
+  printf "test-cpu-gloo-py3_8-tfhead-keras_none-torchhead-mxnethead-pyspark3_2_1 "
 
   # then we vary the frameworks for gpu
   # there is no mxnet-1.6.0.post0 and mxnet-1.6.0 does not work with horovod
   # https://github.com/apache/incubator-mxnet/issues/16193
   # so we test with mxnet 1.5.1
-  printf "test-gpu-gloo-py3_7-tf1_15_5-keras2_2_4-torch1_7_1-mxnet1_5_1_p0-pyspark3_2_0 "
+  printf "test-gpu-gloo-py3_7-tf1_15_5-keras2_2_4-torch1_7_1-mxnet1_5_1_p0-pyspark3_2_1 "
   # here we deviate from mxnet==1.7.0.post2 as there is none for cu101, only post1
-  printf "test-gpu-gloo-py3_8-tf2_5_2-keras2_5_0rc0-torch1_8_1-mxnet1_7_0_p1-pyspark3_2_0 "
-  printf "test-gpu-gloo-py3_8-tf2_6_2-keras2_6_0-torch1_9_1-mxnet1_8_0_p0-pyspark3_2_0 "
-  printf "test-gpu-openmpi-gloo-py3_8-tf2_7_0-keras2_7_0-torch1_10_1-mxnet1_9_0-pyspark3_2_0 "
-  printf "test-gpu-gloo-py3_8-tfhead-keras_none-torchhead-mxnethead-pyspark3_2_0 "
+  printf "test-gpu-gloo-py3_8-tf2_6_3-keras2_6_0-torch1_8_1-mxnet1_7_0_p1-pyspark3_2_1 "
+  printf "test-gpu-gloo-py3_8-tf2_7_1-keras2_7_0-torch1_9_1-mxnet1_8_0_p0-pyspark3_2_1 "
+  printf "test-gpu-openmpi-gloo-py3_8-tf2_8_0-keras2_8_0-torch1_10_2-mxnet1_9_0-pyspark3_2_1 "
+  printf "test-gpu-gloo-py3_8-tfhead-keras_none-torchhead-mxnethead-pyspark3_2_1 "
 
   # and one final test with mixed cpu+gpu
-  printf "test-mixed-openmpi-gloo-py3_8-tf2_7_0-keras2_7_0-torch1_10_1-mxnet1_9_0-pyspark3_2_0 "
+  printf "test-mixed-openmpi-gloo-py3_8-tf2_8_0-keras2_8_0-torch1_10_2-mxnet1_9_0-pyspark3_2_1 "
 fi | if [[ "${PIPELINE_MODE:-}" == "GPU"* ]]; then sed -E "s/[^ ]*-cpu-[^ ]*//g"; else cat; fi \
    | if [[ "${PIPELINE_MODE:-}" == "GPU HEADS" ]]; then sed -E "s/ /\n/g" | grep -e "-tfhead-keras_none-torchhead-mxnethead-" | paste -s -d " " -; else cat; fi \
    | if [[ "${PIPELINE_MODE:-}" == "GPU NON HEADS" ]]; then sed -E "s/[^ ]*-tfhead-keras_none-torchhead-mxnethead-[^ ]*//g"; else cat; fi)
@@ -67,6 +72,8 @@ build_test() {
   local test=$1
 
   echo "- label: ':docker: Build ${test}'"
+  echo "  env:"
+  echo "    COMPOSE_HTTP_TIMEOUT: 300"
   echo "  plugins:"
   echo "  - docker-compose#v3.5.0:"
   echo "      build: ${test}"
@@ -80,7 +87,7 @@ build_test() {
   echo "  retry:"
   echo "    automatic: true"
   echo "  agents:"
-  echo "    queue: cpu"
+  echo "    queue: ${cpu_queue}"
 }
 
 run_test() {
@@ -93,6 +100,8 @@ run_test() {
   echo "- label: '${label}'"
   echo "  command: ${command}"
   echo "  artifact_paths: \"artifacts/**\""
+  echo "  env:"
+  echo "    COMPOSE_HTTP_TIMEOUT: 300"
   echo "  plugins:"
   echo "  - docker-compose#v3.5.0:"
   echo "      run: ${test}"
@@ -294,7 +303,7 @@ run_gloo_integration() {
   # Elastic Horovod on Spark tests are very expensive (high timeout)
   # We only need to run this for our baseline test image, baseline with tensorflow1, and pyspark variations
   # *-gloo-* does intentionally not match -openmpi-gloo- here
-  if [[ ${test} == ${baseline} ]] || [[ ${test} == test-cpu-gloo-*-tf1_* ]] || [[ ${test} != *pyspark3_2_0* ]]; then
+  if [[ ${test} == ${baseline} ]] || [[ ${test} == test-cpu-gloo-*-tf1_* ]] || [[ ${test} != *pyspark3_2_1* ]]; then
     run_test "${test}" "${queue}" \
       ":factory: Elastic Spark TensorFlow Tests (${test})" \
       "bash -c \"cd /horovod/test/integration && /spark_env.sh HOROVOD_LOG_LEVEL=DEBUG pytest --forked -v --log-cli-level 10 --log-cli-format '[%(asctime)-15s %(levelname)s %(filename)s:%(lineno)d %(funcName)s()] %(message)s' --capture=no --continue-on-collection-errors --junit-xml=/artifacts/junit.gloo.elastic.spark.tf.xml ${elastic_spark_tensorflow}\"" \
@@ -303,7 +312,7 @@ run_gloo_integration() {
 
   # Elastic Horovod on Spark tests are very expensive (high timeout)
   # We only need to run this for our baseline test image and pyspark variations
-  if [[ ${test} == ${baseline} ]] || [[ ${test} != *pyspark3_2_0* ]]; then
+  if [[ ${test} == ${baseline} ]] || [[ ${test} != *pyspark3_2_1* ]]; then
     run_test "${test}" "${queue}" \
       ":factory: Elastic Spark Torch Tests (${test})" \
       "bash -c \"cd /horovod/test/integration && /spark_env.sh HOROVOD_LOG_LEVEL=DEBUG pytest --forked -v --log-cli-level 10 --log-cli-format '[%(asctime)-15s %(levelname)s %(filename)s:%(lineno)d %(funcName)s()] %(message)s' --capture=no --continue-on-collection-errors --junit-xml=/artifacts/junit.gloo.elastic.spark.torch.xml test_elastic_spark_torch.py\"" \
@@ -407,33 +416,33 @@ for test in ${tests[@]-}; do
   if [[ ${test} == *-cpu-* ]]; then
     # if gloo is specified, run gloo cpu unit tests and integration tests
     if [[ ${test} == *-gloo* ]]; then
-      run_gloo ${test} "cpu"
+      run_gloo ${test} ${cpu_queue}
     fi
 
     # if oneCCL is specified, run some tests twice,
     # once with mpirun_command_ofi, and once with mpirun_command_mpi
     if [[ ${test} == *oneccl* ]]; then
       # run mpi cpu unit tests and integration tests
-      run_mpi ${test} "cpu" ${oneccl_cmd_mpi}
-      run_mpi ${test} "cpu" ${oneccl_cmd_ofi}
+      run_mpi ${test} ${cpu_queue} ${oneccl_cmd_mpi}
+      run_mpi ${test} ${cpu_queue} ${oneccl_cmd_ofi}
 
       # always run spark tests which use MPI and Gloo
-      run_spark_integration ${test} "cpu"
+      run_spark_integration ${test} ${cpu_queue}
 
       # no runner application, world size = 1
-      run_single_integration ${test} "cpu" ${oneccl_cmd_mpi}
-      run_single_integration ${test} "cpu" ${oneccl_cmd_ofi}
+      run_single_integration ${test} ${cpu_queue} ${oneccl_cmd_mpi}
+      run_single_integration ${test} ${cpu_queue} ${oneccl_cmd_ofi}
     else
       # run mpi cpu unit tests and integration tests
       if [[ ${test} == *mpi* ]]; then
-        run_mpi ${test} "cpu"
+        run_mpi ${test} ${cpu_queue}
       fi
 
       # always run spark tests which use MPI and Gloo
-      run_spark_integration ${test} "cpu"
+      run_spark_integration ${test} ${cpu_queue}
 
       # no runner application, world size = 1
-      run_single_integration ${test} "cpu"
+      run_single_integration ${test} ${cpu_queue}
     fi
   fi
 done
@@ -446,12 +455,12 @@ for test in ${tests[@]-}; do
   if [[ ${test} == *-gpu-* ]] || [[ ${test} == *-mixed-* ]]; then
     # if gloo is specified, run gloo gpu unit tests
     if [[ ${test} == *-gloo* ]]; then
-      run_gloo_pytest ${test} "4x-gpu-v510"
+      run_gloo_pytest ${test} ${gpux4_queue}
     fi
 
     # if mpi is specified, run mpi gpu unit tests
     if [[ ${test} == *mpi* ]]; then
-      run_mpi_pytest ${test} "4x-gpu-v510"
+      run_mpi_pytest ${test} ${gpux4_queue}
     fi
   fi
 done
@@ -464,14 +473,14 @@ for test in ${tests[@]-}; do
   if [[ ${test} == *-gpu-* ]] || [[ ${test} == *-mixed-* ]]; then
     # if gloo is specified, run gloo gpu integration tests
     if [[ ${test} == *-gloo* ]]; then
-      run_gloo_integration ${test} "2x-gpu-v510"
+      run_gloo_integration ${test} ${gpux2_queue}
     fi
 
     # if mpi is specified, run mpi gpu integration tests
     if [[ ${test} == *mpi* ]]; then
-      run_mpi_integration ${test} "2x-gpu-v510"
+      run_mpi_integration ${test} ${gpux2_queue}
     fi
 
-    run_spark_integration ${test} "2x-gpu-v510"
+    run_spark_integration ${test} ${gpux2_queue}
   fi
 done
